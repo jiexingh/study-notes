@@ -1,0 +1,57 @@
+保证自己的代码良好运行是每一个程序员的基本义务也是崇高的责任
+1. 设计图比例：
+iphone6 像素与小程序 1：1    rpx
+2.
+display:flex;
+flex-direction:column;
+align-items:center;
+3.设置文字在框居中 line-height等于容器的行高
+4. 全屏 page{
+height:100%
+...
+}
+5.catchTap 不冒泡父类
+bindtap 冒泡绑定事件
+6.页面路由导航
+negaviteTo 隐藏当前页面到新的页面，当前页面在后台
+redirectTo 关闭当前页面到新的页面
+
+7.<!-- 引入模版 -->
+<import src="../tpls/products/products-tpl.wxml"/>
+样式到样式wxss
+@import "../tpls/products/products-tpl.wxss";
+8.自定义属性
+data-***
+9.居中
+脱离文档流：
+position：absolute；
+left:50%;
+margin-left:-51rpx;
+
+10.透明度：
+opacity:num;
+
+11.页面传值例子
+
+  var id = home.getDataSet(event,'id');
+    wx.navigateTo({
+      url: '../product/product?id='+id,
+    })
+接收：
+ onLoad: function(options) {
+    var id = options.id;
+｝
+12.如果在onload方法中，不是异步的去执行一个数据绑定
+可不使用他this.setData方法
+只需要对this.data赋值即可实现对数据的绑定
+this.data.xxx=***;
+
+13.target 指的是当前点击的组件
+currentTarget 指的是事件捕获的组件
+14.加载更多可用concat()连接原始数据与新的数据
+
+15.modul使用require引入
+16.es6 重点 class promise module
+
+17.微信小程序云开发 第三方库 request got request-promise
+可以不用备案 无限制

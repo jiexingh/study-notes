@@ -1,0 +1,9 @@
+中间件 最好加上async 和 await  --> 求值关键字   异步的终极解决方案
+中间件 总是返回promise
+
+为什么一定要加 async 因为
+不加会出错 哈哈哈
+
+洋葱模型 先决条件 async 和 await
+
+自动重启 全局安装 npm i nodemon -g 

@@ -1,0 +1,56 @@
+1.属性绑定
+v-bind:属性名
+简写：
+:属性名
+
+2.双向数据绑定
+v-model=“ 内容”
+
+3.事件
+@click="事件名”
+
+4.Vue里计算属性
+computed:{
+  fulname:function(){
+   return this.first+' '+this.last
+}
+}
+5.侦听器
+watch:{
+   侦听的数值 function:(){
+}
+
+fistname:function(){
+firstname 发生改变时触发；
+}
+}
+
+6.v-if
+<div v-if="show"></div>
+data中的show为真就显示
+
+7.v-for 
+数据源为list
+<ul >
+  <li v-for="item of list" :key="item">{{item}}</li>
+<ul>
+
+8.方法写在
+method:{
+
+}
+9.创建组件
+全局组件：
+Vue.component('组件名',{
+
+props:['属性值']接收值
+template: '<li>{{属性值}}</li>'
+medthods:{
+
+}
+})
+
+使用 直接
+<组件名 v-for=""  ：属性=“值”></组件名>
+局部组件：
+

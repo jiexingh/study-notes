@@ -1,0 +1,25 @@
+本地项目上传github 命令如下：
+
+
+1、git init
+
+
+
+2、git add .
+
+
+
+3、git commit -m "init"
+
+
+
+4、git remote add origin （远程仓库地址）
+
+
+
+5、git push -u origin master(执行这个命令行后会弹出下面的错误，出现错误的主要原因是github中的README.md文件不在本地代码目录中)
+
+6、可以通过以下命令解决该问题。
+     git pull --rebase origin master
+
+7、执行语句 git push -u origin master 即可完成代码上传到github

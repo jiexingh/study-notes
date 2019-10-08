@@ -1,0 +1,388 @@
+数据库表名字通常有前缀：取数据库的前两个字母_
+net start mysql   --注意结尾不需要；符号
+net stop mysql
+mysql -h[ip/域名] -p端口 -u用户名 -p密码
+
+最重要的设置字符集
+快捷方式：set names 字符集gbk；
+
+--1.创建数据库
+create database 数据库名 chartset 字符集（gbk/utf8）
+
+--2.显示所有数据库
+show databases;
+查看当前数据库
+select database();
+
+--3.显示部分数据库
+show databases like '%/_匹配模式%_';
+
+--4.查看数据库创建语句
+show create database 数据库名
+
+--5.选择数据库
+use 数据库名
+
+--6.修改数据库字符集
+alter database 数据库名字 chartset=字符集；
+
+--7.删除数据库
+drop database 数据库名称；
+
+--8.创建普通表
+create table 表名（
+字段名 字段类型 [字段属性]
+）;
+
+--9.没有指定数据库创建表
+create table 数据库名.class（
+字段名 字段类型 [字段属性]
+）;
+
+--10.表里指定字符集
+create table 表名（
+字段名 字段类型 [字段属性]
+）charset 字符集（gbk/utf8）;
+
+--11.复制已有的表结构（只有结构，不包括数据）
+create table 新表名 like 表名（只要使用数据库.表名，就可以在任何数据库下访问）
+
+--12.查看所有的表
+show tables;
+
+--13.查看部分的表
+show tables like '%/_匹配模式%_';
+
+--14.显示表结构
+describe 表名；
+desc 表名；
+show columns from 表名；
+
+--15.显示创建表语句
+show create table 表名；
+
+--16.修改表名
+rename table 原表名 to 新表名
+
+--17.新增字段
+alter table 表名  add 字段名 字段类型(first 放在最前面);
+eg:alter table add pwd varchar(32) after username;
+alter table add id int first;
+--18.修改字段名
+alter table 表名 change 旧字段名 新字段名 新字段类型[属性][新位置]
+
+--19.修改字段类型
+alter table 表名 modify 字段名 属性；
+eg:alter table test modify age varchar(30);
+
+--20.删除字段
+alter table 表名 drop 字段名；
+eg;alter table test drop age;
+
+--21.删除表
+drop table 表名1，表名2，...；
+
+--22.插入数据
+insert into 表名 [(字段列1，2)] values(对应1，2);
+多条一起插入
+insert into 表名 [(字段列1，2)] values(对应1，2)，(对应1，2)，(对应1，2);
+--23.查询
+所有：select * from 表名；
+部分：select 字段 from 表名；
+简单条件查询：select 字段名/* from 表名 where 字段名=值；
+
+高级：
+distinct :去重
+--24.删除
+delete from 表名 [where 字段=值];
+删除全表需要重置自动增长，
+truncate 表名；
+as:别名
+字段名 as 别名；
+--25.更新
+update 表名 set 字段名=新值 where 字段名=值；
+
+如果没有where条件限制，可以使用limit来限制更新数量
+update 表名 set 字段名=新值 where limit 数量；
+
+
+--26.查看系统保存的三种关系处理字符集
+show variables like 'character_set%';
+
+可以修改其中
+set character_set_server =utf8;
+
+
+--无符号
+unsigned 
+tinyint->-128-127;
+--显示长度可以自己设定
+--zerofill->不够长度自己补充0；
+
+float:表示不指定小数位的浮点数---通常用来保存一些数量特别大，大到可以不用那么精确的数据。
+flaot(M,D):表示一共存储M位有效数字，其中包括小数部分占D位；-》精度在7位左右；
+decimal(M,D):可以保证30位内D的精度--定点数-一般用于金钱；
+timestamp数据库中对应的数据修改，其值会自动修改；
+php->时间保存通常使用真正的时间戳，从而用整型来保存。
+varchar:记录数据长度（系统采用数据长度自动分配空间，所以每个varchar数据产生后，系统会在数据后面增加1-2个字节的额外开销，是用来保存数据所占用的空间长度，如果数据本身小于127个字符，额外开销一个字节，如果大于127个，就开销2个字节）
+utf8:一个字符占用3个字符
+text:文章可以使用
+enum('数值1'，‘数值2’)：可以规范数据，保证输入的数据是设定的范围，其他的类型都不行。
+性别 enum('男','女','保密');
+set('数值1'，‘数值2’)--集合
+default->默认值 
+default 数值；
+comment '注释'：可以给字段名或者表注释 show create table 表名 查看；
+自动增长-auto_increment;-->一张表只能有一个
+--26修改自动增长
+alter table 表名 auto_increment=数值； 
+--27 删除自动增长
+alter table 表名 modify id int；-》去掉自动增长的关键字
+
+--28查看自增长初始变量
+show variables like 'auto_increment%';
+--29 删除唯一键
+alter table 表名 drop index 唯一键名；
+
+主键冲突的解决方案：
+1.主键冲突更新：类似插入数据语法，如插入的过程中主键冲突，那么采用更新方法。
+insert into 表名[（字段名）] values('值')  on duplicate key 字段名=值；
+2.主键冲突替换：干掉原来数据，重新插入
+replace into[(字段列表)] values(值列表)；---比插入慢；
+
+蠕虫复制：
+insert into 表名(xx) select xx from 另一个表；
+--》通常是重复数据，没有太大的意义，可以在短期内快速增加表的数据量，从而可以测试表的压力，还可以通过大量数据来测试表的效率（索引），要注意主键冲突 
+
+多表获取数据：
+from 表1，表2；
+->结果是两张表记录数相乘--对数据库压力极大，不要使用；
+
+动态数据获取：
+from 后面跟的不是一个实体表，而是一个从表里查出来的二维结果（子查询）
+=>from(select 字段列表 from 表）as 别名；
+
+
+group by:->是为了分组后进行数据统计，如果只是向看数据，便无意义，group by将数据按照指定的字段分组后，只会保留每组的第一条记录；
+多分组：按照某个字段进行分组之后，对已经分组的数据在进行分组
+语法：group by 字段1,字段2[asc\desc]；//先按字段1，之后将结果再按照字段2进行排序。
+
+回溯统计：
+group by 字段 with rollup;
+
+统计函数(聚合函数)：
+couny():->统计每组的数量，如果统计目标是是字段，那么不统计为空null,如果为*代表统计记录。
+avg();求平均值
+sum();求和
+max();求最大值
+min();求最小值
+group_concat():拼接
+
+
+having字句
+having的本质和where一样，是用来进行数据条件筛选。但是where不行。
+1.having是在group by 之后，group by在where之后，where的时候表示将数据从磁盘拿到内存，where之后的所有操作都是内存操作。
+
+order by 字段 [asc|desc];
+
+》》》
+limit:->limit 数量；->限定为1条记录，较常用；
+分页原理：利用limit来拿限制获取指定区间的数据；
+语法：
+limit offset,length;//offset偏移量；从哪开始；length获取多少条记录；
+mysql记录数量从0开始;
+limit 0,2; 表示获取前两条记录
+
+运算符：
+算数运算符：+、-、*、/、%---->通常不在条件中使用而是在结果中使用。
+select * from 表名where 字段 between a and b;
+between 条件1 and 条件2；
+条件1必须小于条件2，闭区间
+
+in:->在什么里面，是用来替代=，当结果不是一个值而是一个集；
+基本语法：
+in('结果1'，‘结果2’，‘结果3’)；只要当前条件在集中出现过，那么就成立；
+
+is:专门用来判断条件是否为null,的运算符；
+is null、、is not null;
+
+union:联合查询-
+->语法：
+select 语句
+union
+select 语句
+
+order by 语句需要用括号括起来,一定配合limit使用才生效，通常使用一个较大的数；
+->(select 语句 order by )
+union
+(select 语句 order by)
+
+
+交叉连接-》没意义，避免使用-》笛卡尔积->无实际意义
+语句1  cross join 表2
+
+内连接：inner join：从一张表中取出所有记录去与另外一张表进行匹配，匹配成功则保留-->通常是在对数据具有精度要求的地方使用。
+语法：
+表1 [inner]join 表2 on 匹配条件（无则是交叉）；
+内连接不强制使用匹配条件on,因此可以在数据匹配完成之后，使用where条件来限制，效果与on一样（建议使用on）.
+
+因为表的设计容易产生同名字段，尤其是ID，所以通常采用表名.字段名，来确保唯一性。
+
+常用->作为数据获取对应数据：外连接（outer join）：按照某一张表作为主表（表中所有数据都会保留），根据条件去连接另外一张表，得到目标数据。
+左外连接（left join）：--->左表是主表
+语法：
+主表 left join 从表 on 连接条件；
+
+右外连接（right join）：--->右表是主表
+语法：
+从表 right join 主表 on 连接条件；
+
+using关键字：是在连接查询中用来代替对应的on关键字进行匹配->也不常用
+语法：
+表1 [inner ,left,right] join 表2 using(同名字段列表)；//连接字段
+eg:select * from my_student left join my_class on my_class.class_id=my_class.class->转换成using->
+select * from my_student left join my_class using(class_id);
+
+标量子查询：子查询得到的结果是一个数据（一行一列）；
+基本语法：
+select * from 数据源 where 条件判断 =/<>(select 字段名 from 数据源 where 条件判断)；//子查询得到的结果只有一个值；
+eg:select * from class where class_id=(select class_id from student where stu_name='xx');->已知一个学生名字xx，想知道他所在的那个班级；
+
+列子查询：子查询得到的结果是一列数据（一列多行）
+基本语法：
+主查询 where 条件 in(列子查询)
+eg;select name from my_class where class_id in (select class_id from my_student);
+
+行子查询：子查询返回的结果是一行多列；
+行元素：字段元素是指一个字段对应的值，行元素对应的就是多个字段；多个字段合起来作为一个元素参与运算，把这种情况称为行元素。
+基本语法：
+主查询 where 条件（构造）
+
+any任意一个
+=any(列子查询)：条件在查询结果中有任意一个匹配即可，等价于in------>如果对应的匹配字段有null，那么不参与匹配。
+<>any(列子查询):条件在查询结果中不等于任意一个；
+
+数据备份与还原
+---->整库数据备份：sql数据备份；备份的结果都是sql指令-->结构备份；
+mysqldump.exe---->mysql提供专门用来备份sql客户端；
+语法：
+mysqldump/mysqldump.exe -hpup 数据库名字[表1 [表2]] > 备份文件地址
+
+备份三种形式：
+1.整库备份（提供数据库名）
+eg:mysqldump.exe -hlocalhost -p3306 -uroot -proot  mydatabase >c:/server/temp/mysql.sql;
+2.单表备份（数据库后跟一张表）
+3.多表备份（）
+
+数据还原：
+1.利用mysql.exe客户端：没有登录之前，可以直接用该客户端进行数据还原。
+语法：
+mysql.exe -hpup 数据库 < 文件地址
+2.在sql指令，提供一种导入sql指令的方式
+语法：source sql文件地址；  //必须先进入对应的数据库
+3.复制指令执行--》不推荐
+
+权限管理：
+创建用户：
+1.直接使用ROOT用户在mysql.user表中插入记录--》不推荐
+2.sql语句：
+语法：
+create user 用户名 identified by '明文密码';
+用户：用户名@主机地址
+主机地址：‘’/‘%’
+
+删除用户：注意：mysql中user 是带着host本身的（具有唯一性）
+drop user 用户名@host；
+
+修改用户密码：
+mysql中提供了多种修改的方式，基本上都必修使用对应提供的一个系统函数，password必须靠该函数对密码进行加密处理
+1.使用专门的修改密码指令：
+基本语法：
+set password for 用户=password('密码');
+2.使用更新语句update来修改表
+基本语法：
+update mysql.user set password =password('新的明文密码')where user =''and host='';
+
+
+密码丢失方案：
+1.忘记root用户密码：
+  停止服务net stop mysql
+->重新启动服务mysqld.exe --skip-grant-tables(此时服务器没用权限概念，任何客户端都能连接mysql)
+->修改用户名密码
+->赶紧关闭重启（可启用进程关闭）；
+-->注意速度要快
+
+外键：
+增加外键：1.在创建表的时候增加外键（类似主键）
+语法：在字段之后增加一条语句；
+[constraint '外键名'] foreign key(外键字段) references 主表（主键）
+eg:create table foreign(
+id int primary key auto_increment,
+name varchar(10)not null,
+class_id int,
+foreign key(class_id) refrences my_class(class_id))charset utf8;
+)
+2.在创建表后增加外键
+alter table 表名 add [constraint '外键名'] foreign key(外键字段) reference 主表（主键）
+eg:修改student表，将class_id设为外键字段
+alter table student add constraint 'student_class_id' foreign key(class_id) refrence class(class_id);
+
+修改&&删除外键：
+外键不允许修改，只能删除之后再创建
+语法：alter table 从表 drop foreign key 外键名字；
+删除对应索引：alter table 表名 drop index 索引名；
+
+修改临时语句结束符：
+delimiter 新符号---》中间为正常的sql语句，使用分号结束；
+修改回：
+delimiter ;
+
+
+创建触发器：--->一张表只能有一个；
+delimiter $$
+create trigger 触发器名 after 操作（insert） on 表名 each row
+begin
+   --表操作 update my_goods set ...where...
+end
+$$
+delimiter ;
+
+删除触发器：
+drop trigger 触发器名；
+触发器应用：
+记录关键字：new、old
+触发器针对的是数据表中的每行记录，每行在 数据操作前后都有一个对应的状态
+触发器在执行之前就将对应的状态获取，将没有操作之前的状态都保存到old关键字中，操作之后的放在new中
+old 和new 并不是所有的触发器都有
+insert :插入的数据全为空，没有old
+delete:清空数据，没有new
+例子：
+---自动扣除商品表库存的触发器
+delimiter $$
+create trigger a_i_o_t after insert on my_order for each row 
+begin 
+--更新商品库存：new代表新增的订单
+update my_order set inv=inv-new.goods_num where id=new.goods_id
+end
+$$
+delimiter ;
+
+
+如果库存数量没有商品订单多
+判断库存：
+delimiter $$
+create trigger b_i_o_t before insert on my_order for each row 
+begin 
+--取出库存数据进行判断
+select inv from my_good where id =new goods_id into @inv
+--判断
+if @inv<new.goods_num then
+--中断操作，暴力解决，主动出错
+insert into xxx values ('xxx');
+end if;
+end 
+$$
+delimiter ;
+
+
+2019-06-13 0:24  12-20

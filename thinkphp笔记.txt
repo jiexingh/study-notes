@@ -1,0 +1,62 @@
+获取参数变量的三种方法：
+1.依赖注入，变量的自动对译
+  public function hello(Request $request)
+    {
+        return 'Hello,' . $request->param('name') . '！';
+    }
+2.使用Request对象 
+$all=Request::instance()->param();
+ $name=Request::instance()->param('name');
+        $age=Request::instance()->param('age');
+3.使用Input
+ $all=input('param.');
+$name=input('param.name');
+
+迭代 可以边写边改 大体需要了解
+
+验证validate
+       //1.        独立验证
+//        被验证数据
+        $data=[
+            'name'=>'jx123456789123',
+            'email'=>'2420499179qq.com'
+
+        ];
+//        验证规则
+        $validate=new Validate([
+            'name'=>'require|max:10',
+            'email'=>'email'
+        ]);
+        $result=$validate->batch()->check($data);
+       var_dump($validate->getError());
+2.验证器验证
+
+ctrl +alt+o 快速删除不用的use
+
+AOP:面向切面编程 站在更高的角度 统一的处理某一个问
+
+三种连接数据库的方法
+1.原生sql语句查询
+2.使用构造器
+3.模型:编码是对事物的抽象，模型面向对象的思想得到体现 建立在DB的基础之上
+
+ORM:object relation mapping 对象关系映射  表面向对象的另外一种表达方式
+
+
+1对1  经验
+hasone()-->一个表或者模型里面没有外键。而外键存在于与之相关连的表里面
+hasOne('关联模型名','外键名','主键名',['模型别名定义'],'join类型');
+belongsTo()-->如果一个表或者一个模型里面存在（包含）一个外键，可以定义
+belongsTo('关联模型名','外键名','关联表主键名',['模型别名定义'],'join类型');
+
+
+路由规则 可以自定义
+Route::get('api/:version/product/:id','api/:version.Product/getOne',[],['id'=>'\d+']);
+//Route::get('api/:version/product/:id','api/:version.Product/getOne');
+
+
+where['字段名']=array(表达式，查询表达式);
+eg:where['id']=array('lt',3);
+
+
+开启强制路由
