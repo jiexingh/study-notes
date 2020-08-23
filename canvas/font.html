@@ -1,0 +1,260 @@
+<!--
+ * @Autor: jiexingh
+ * @Date: 2020-08-23 15:34:40
+ * @LastEditors: jiexingh
+ * @LastEditTime: 2020-08-23 22:40:15
+-->
+<!DOCTYPE html>
+
+<head lang="en">
+    <meta charset="utf-8">
+    </meta>
+    <meta name="viewport"
+        content="height=device-height,width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    </meta>
+    <title>canvas测试学写一个字</title>
+</head>
+<style>
+    #canvas {
+        display: block;
+        margin: 0 auto;
+    }
+
+    .btn-wrap {
+        margin: 20px auto;
+        display: flex;
+        flex-direction: row;
+        box-sizing: border-box;
+        justify-content: center;
+    }
+
+    .btn-wrap button {
+        display: inline-block;
+        line-height: 1;
+        white-space: nowrap;
+        cursor: pointer;
+        border-color: #dcdfe6;
+        color: #606266;
+        -webkit-appearance: none;
+        text-align: center;
+        box-sizing: border-box;
+        outline: none;
+        margin: 0;
+        transition: .1s;
+        font-weight: 500;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+</style>
+
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="btn-wrap">
+        <button id='clear'>清除</button>
+    </div>
+</body>
+<script>
+    const canvasWidth = Math.min(400, window.outerWidth - 20);
+    const canvasHeight = canvasWidth;
+    const canvasLineWidth = 6;
+    const canvasLineDash = 10;
+    const canvasLineDashWidth = 1;
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+
+    const clearBtn = document.getElementById('clear');
+
+    let isMouseDown = false;
+    let prePoint = {
+        x: 0, y: 0
+    }
+    let preTimeStamp = 0;
+    let prePenLineWidth = -1; //记录上一次的线条宽度
+    let storkPenColor = 'black'
+    const maxPenLineWidth = 30;
+    const minPenLineWidth = 1;
+    const maxStrokeV = 10;
+    const minStrokeV = 0.1;
+
+    clearBtn.addEventListener('click', () => {
+        context.clearRect(0, 0, canvasWidth, canvasHeight);
+        drawGrid();
+    })
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    /*
+    *绘制田字格
+    */
+    function drawGrid() {
+        // 保存初始状态 避免干扰
+        context.save();
+        context.strokeStyle = storkPenColor
+        context.beginPath();
+        context.moveTo(canvasLineWidth / 2, canvasLineWidth / 2);
+        context.lineTo(canvasWidth - canvasLineWidth / 2, canvasLineWidth / 2);
+        context.lineTo(canvasWidth - canvasLineWidth / 2, canvasHeight - canvasLineWidth / 2);
+        context.lineTo(canvasLineWidth / 2, canvasHeight - canvasLineWidth / 2);
+        context.closePath();
+
+        context.lineWidth = canvasLineWidth;
+        context.stroke();
+
+        context.beginPath();
+        context.lineWidth = canvasLineDashWidth;
+        context.moveTo(0, 0);
+        context.setLineDash([canvasLineDash, canvasLineDash]);
+        context.lineTo(canvasWidth, canvasHeight);
+
+        context.moveTo(canvasWidth, 0);
+        context.lineTo(0, canvasHeight);
+        context.stroke();
+
+        context.beginPath();
+        // 切换回实线 并且切去虚线宽度的一半才是起点
+        context.setLineDash([]);
+        context.moveTo(canvasWidth / 2 - canvasLineDashWidth / 2, 0);
+        context.lineTo(canvasWidth / 2, canvasHeight);
+
+        context.moveTo(0, canvasHeight / 2 - canvasLineDashWidth / 2);
+        context.lineTo(canvasWidth, canvasHeight / 2);
+        context.stroke();
+
+        // 存储状态
+        context.restore();
+    }
+
+    /**
+    * 计算窗口与canva 包围盒子的距离
+    */
+    function windowToCanvas(x, y) {
+        const bbox = canvas.getBoundingClientRect();
+        return {
+            x: Math.round(x - bbox.left),
+            y: Math.round(y - bbox.top)
+        }
+    }
+
+    /*
+    *计算两个坐标点的距离
+    */
+    function calcDistance(point1, point2) {
+        return Math.sqrt((point1.x - point2.x)
+            * (point1.x - point2.x)
+            + (point1.y - point2.y)
+            * (point1.y - point2.y)
+        )
+    }
+
+    /**
+    计算笔画粗细
+    */
+    function calcPenLineWidth(s, t) {
+        let v = s / t;
+        let penLineWidth;
+        if (v <= minStrokeV) {
+            penLineWidth = maxPenLineWidth;
+        } else if (v >= maxStrokeV) {
+            penLineWidth = minPenLineWidth;
+        } else {
+            penLineWidth = maxPenLineWidth - (v - minStrokeV) / (maxStrokeV - minStrokeV) * (maxPenLineWidth - minPenLineWidth)
+        }
+        if (prePenLineWidth != -1) {
+            return prePenLineWidth * 2 / 3 + penLineWidth * 1 / 3
+        }
+        return penLineWidth;
+    }
+
+    function beginStroke(point) {
+        isMouseDown = true;
+        preTimeStamp = new Date().getTime();
+        prePoint = {
+            x: point.clientX,
+            y: point.clientY
+        }
+    }
+
+    function moveStroke(point) {
+        let currentPoint = windowToCanvas(point.clientX,
+            point.clientY);
+        let s = calcDistance(currentPoint, prePoint);
+        let currentTimeStamp = new Date().getTime();
+        let t = currentTimeStamp - preTimeStamp;
+
+        let penLineWidth = calcPenLineWidth(s, t);
+
+        context.beginPath();
+        context.moveTo(prePoint.x, prePoint.y);
+        context.lineTo(currentPoint.x, currentPoint.y);
+
+        context.strokeStyle = 'black';
+        context.lineWidth = penLineWidth;
+        context.lineCap = 'round';
+        context.lineJoin = 'round';
+        context.stroke();
+
+        prePoint = currentPoint;
+        preTimeStamp = currentTimeStamp;
+        prePenLineWidth = penLineWidth;
+    }
+
+    function endStroke() {
+        isMouseDown = false;
+    }
+
+    canvas.onmousedown = function (event) {
+        event.preventDefault();
+        beginStroke(event);
+        // isMouseDown = true;
+        // preTimeStamp = new Date().getTime();
+        // prePoint = {
+        //     x: event.clientX,
+        //     y: event.clientY
+        // }
+    }
+    canvas.onmousemove = function (event) {
+        event.preventDefault();
+        if (isMouseDown) {
+            moveStroke({ clientX: event.clientX, clientY: event.clientY });
+        }
+    }
+
+    canvas.onmouseup = function (event) {
+        event.preventDefault();
+        endStroke();
+    }
+
+    canvas.onmouseout = function (event) {
+        event.preventDefault();
+        endStroke();
+    }
+
+    canvas.addEventListener('touchstart', (event) => {
+        event.preventDefault();
+        // 注意移动端全部存储于touchs数组中
+        let touche = event.touches[0]
+        beginStroke({ clientX: touche.pageX, clientY: touche.pageY });
+    })
+
+    canvas.addEventListener('touchmove', (event) => {
+        event.preventDefault();
+        if (isMouseDown) {
+            let touche = event.touches[0]
+            moveStroke({ clientX: touche.pageX, clientY: touche.pageY });
+        }
+    });
+
+    canvas.addEventListener('touchend', (event) => {
+        event.preventDefault();
+        endStroke();
+    })
+
+    window.onload = function () {
+        drawGrid();
+    }
+
+</script>
+
+</html>
