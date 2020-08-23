@@ -1,0 +1,140 @@
+<!--
+ * @Autor: jiexingh
+ * @Date: 2020-08-22 16:19:18
+ * @LastEditors: jiexingh
+ * @LastEditTime: 2020-08-23 22:09:36
+-->
+<!DOCTYPE html>
+
+<head lang="en">
+    <meta charset="utf-8">
+    </meta>
+  
+    <title>canvas测试</title>
+</head>
+<style>
+    #canvas,
+    #water-canvas {
+        border: 1px solid #aaaaaa;
+        display: block;
+        margin: 0 auto;
+    }
+</style>
+
+<body style="background-color: black;">
+    <canvas id="canvas"></canvas>
+    <canvas id="water-canvas" style="display: none;"></canvas>
+    <canvas id="scalePoint-canvas" style="display: none;"></canvas>
+    <input id="scale-range" min="0.5" max="3" step="0.01" value="1" type="range"
+        style="display: block; margin: 20px auto; width: 400px;"></input>
+    <script>
+        const myCanvas = document.getElementById('canvas');
+        const context = myCanvas.getContext('2d');
+
+        const waterMarkCanvas = document.getElementById('water-canvas');
+        const waterMarkCanvasContext = waterMarkCanvas.getContext('2d');
+
+        const scalePointCanvas = document.getElementById('scalePoint-canvas');
+        const scalePointCanvasContext = scalePointCanvas.getContext('2d');
+
+        const slider = document.getElementById('scale-range');
+        let image = new Image();
+
+        let isMouseDown = false;
+
+        window.onload = function () {
+            myCanvas.width = 400;
+            myCanvas.height = 400;
+            let scale = slider.value;
+            image.src = './image/01.png';
+            image.onload = function () {
+                drawImageByScale(myCanvas, context, scale)
+                slider.onmousemove = function (event) {
+                    scale = slider.value;
+                    drawImageByScale(myCanvas, context, scale)
+                }
+            }
+            drawWaterMark();
+        }
+
+        function scalePointCancae(image) {
+            scalePointCanvas.width = image.width;
+            scalePointCanvas.height = image.height;
+            scalePointCanvasContext.drawImage(image,);
+        }
+
+        function drawCanvasMagnifier(isShowMaginfier, point) {
+
+
+        }
+        /**
+         * 计算窗口与canva 包围盒子的距离
+        */
+        function windowToCanvas(x, y) {
+            const bbox = myCanvas.getBoundingClientRect();
+            return {
+                x: x - bbox.left,
+                y: y - bbox.top
+            }
+        }
+        myCanvas.onmousedown = function (event) {
+            event.preventDefault();
+            const clientX = event.clientX;
+            const clientY = event.clientY;
+            const point = windowToCanvas(clientX, clientY);
+            isMouseDown = true;
+        }
+
+        myCanvas.onmousemove = function (event) {
+            event.preventDefault();
+            if (isMouseDown) {
+                const point = windowToCanvas(event.clientX, event.clientY);
+                console.log(point);
+                drawCanvasMagnifier(true, point);
+                console.log(event);
+            }
+        }
+
+        myCanvas.onmouseup = function (event) {
+            event.preventDefault();
+            isMouseDown = false;
+            drawCanvasMagnifier(false);
+        }
+        myCanvas.onmouseout = function (event) {
+            event.preventDefault();
+            isMouseDown = false;
+            drawCanvasMagnifier(false);
+        }
+
+        function drawWaterMark() {
+            waterMarkCanvas.width = 200;
+            waterMarkCanvas.height = 200;
+
+            waterMarkCanvasContext.font = 'bold 30px Arial';
+            waterMarkCanvasContext.lineWidth = '1px';
+            waterMarkCanvasContext.fillStyle = 'rgba(255,255,255,0.5)';
+            waterMarkCanvasContext.textBaseline = 'middle';
+            waterMarkCanvasContext.fillText('啊兴同学', 20, 50);
+        }
+        function drawImageByScale(myCanvas, context, scale) {
+            let imageWidth = myCanvas.width * scale;
+            let imageHeigh = myCanvas.height * scale;
+
+            // let sx = imageWidth / 2 - myCanvas.width / 2;
+            // let sy = imageHeigh / 2 - myCanvas.height / 2;
+            // context.drawImage(image, sx, sy, myCanvas.width, myCanvas.height, 0, 0, myCanvas.width, myCanvas.width)
+
+            let dx = myCanvas.width / 2 - imageWidth / 2;
+            let dy = myCanvas.height / 2 - imageHeigh / 2;
+            context.clearRect(0, 0, myCanvas.width, myCanvas.height);
+            context.drawImage(image, dx, dy, imageWidth, imageHeigh);
+            context.drawImage(waterMarkCanvas,
+                myCanvas.width - waterMarkCanvas.width,
+                myCanvas.height - waterMarkCanvas.height);
+        }
+
+
+    </script>
+</body>
+
+</html>
