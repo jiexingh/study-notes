@@ -1,0 +1,61 @@
+<!--
+ * @Autor: jiexingh
+ * @Date: 2020-09-20 16:58:24
+ * @LastEditors: jiexingh
+ * @LastEditTime: 2020-09-20 17:43:40
+-->
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>使用canvas 绘制播放的视频</title>
+</head>
+
+<body>
+    <video id="video" controls="controls">
+        <source src="D:\downLoad\movies\牧马人.mp4">
+    </video>
+    <p>canvas绘制的视频画面</p>
+    <canvas id="#myCanvas"></canvas>
+    <div>
+        <button id="playBtn">播放</button>
+        <button id="plauseBtn">暂停</button>
+    </div>
+    <script>
+        window.onload = () => {
+            const video = document.querySelector("#video");
+            console.log(video);
+            const canvas = document.getElementById("#myCanvas");
+            const playBtn = document.querySelector("#playBtn");
+            const plauseBtn = document.querySelector("#plauseBtn");
+            const context = canvas.getContext('2d');
+
+            let timeId = null;
+
+            function draw() {
+                if (video.paused || video.ended) return;
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                timeId = setInterval(draw, 0)
+            }
+
+            video.addEventListener("onmouseover", () => {
+                console.log(video);
+            })
+            playBtn.addEventListener("click", () => {
+                if (!video.paused) return;
+                video.play();
+                draw();
+            });
+
+            plauseBtn.addEventListener("click", () => {
+                if (video.paused) return;
+                video.pause();
+                clearTimeout(timeId)
+            })
+        }
+    </script>
+</body>
+
+</html>

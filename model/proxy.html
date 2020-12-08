@@ -1,0 +1,92 @@
+<!--
+ * @Autor: jiexingh
+ * @Date: 2020-09-26 17:20:04
+ * @LastEditors: jiexingh
+ * @LastEditTime: 2020-09-30 16:22:33
+-->
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>代理模式</title>
+</head>
+
+<body>
+
+    <!-- 虚拟代理合并http请求 -->
+    <input type="checkbox" id="1" />
+    <input type="checkbox" id="2" />
+    <input type="checkbox" id="3" />
+    <input type="checkbox" id="4" />
+    <input type="checkbox" id="5" />
+    <input type="checkbox" id="6" />
+    <input type="checkbox" id="7" />
+    <input type="checkbox" id="8" />
+    <input type="checkbox" id="9" />
+    <input type="checkbox" id="10" />
+    <input type="checkbox" id="11" />
+    <script>
+        // 图片懒加载代理模式
+        const myImage = (function () {
+            let imageNode = document.createElement('img');
+            document.body.appendChild(imageNode);
+            return {
+                setSrc: function (src) {
+                    imageNode.src = src;
+                }
+            }
+        })();
+
+        const proxyImage = (function () {
+            const img = new Image;
+            img.onload = function () {
+                myImage.setSrc(this.src)
+            }
+            img.onerror = (error) => {
+                console.log(error);
+            }
+            return {
+                setSrc: function (src) {
+                    myImage.setSrc('D:/downLoad/images/01.png')
+                    img.src = src;
+                }
+            }
+        })();
+
+        proxyImage.setSrc(
+            'D:/downLoad/images/picture/90860e87ab87aeaed8210dfee5aed2442944059.jpg'
+        );
+
+        const synchronusFile = function (id) {
+            console.log('开始同步文件，id为：', id);
+        }
+
+        //  代理收集同步文件id
+        const proxySynchronusFile = (function () {
+            let cache = [], //利用代理保存需要一段时间内需要同步的id
+                timer; // 定时器
+            return function (id) {
+                cache.push(id);
+                if (timer) return;
+                timer = setTimeout(() => {
+                    synchronusFile(cache.join(','));
+                    clearTimeout(timer);
+                    timer = null;
+                    cache.length = 0; //清空id集合
+                }, 2000)
+            }
+        })()
+        let checkboxs = document.getElementsByTagName('input');
+        for (let i = 0, len = checkboxs.length; i < len; i++) {
+            let item = checkboxs[i];
+            item.onclick = () => {
+                if (item.checked === true) {
+                    // synchronusFile(item.id)
+                    proxySynchronusFile(item.id);
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

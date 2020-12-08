@@ -1,0 +1,190 @@
+<!--
+ * @Autor: jiexingh
+ * @Date: 2020-09-26 17:20:04
+ * @LastEditors: jiexingh
+ * @LastEditTime: 2020-09-30 15:48:58
+-->
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>AOP 按钮上报数据统计</title>
+</head>
+
+<body>
+
+    <button tag="login" draggable="true" id="btnLogin">点击打开登录浮窗</button>
+    <button tag="login1">点击打开登录浮窗1</button>
+    <button tag="login2">点击打开登录浮窗2</button>
+    <button tag="login3">点击打开登录浮窗3</button>
+    <button tag="login4">点击打开登录浮窗4</button>
+    <button tag="login5">点击打开登录浮窗5</button>
+    <input id="filter">
+    <button tag="search" id="search">搜索</button>
+    <svg xmlns="http://www.w3.org/2000/svg" width="300" height="100" version="1.1">
+        <text x="100" y="50" style="font-size: 50px;">
+            <tspan>A</tspan>
+            <tspan>B</tspan>
+            <tspan>C</tspan>
+            <tspan>D</tspan>
+        </text>
+    </svg>
+
+    <!-- 虚拟代理合并http请求 -->
+    
+    <script>
+        // const showLogin = function () {
+        //     console.log('打开登录浮层');
+        //     log(this.getAttribute('tag'))
+        // }
+        // const log = function (tag) {
+        //     console.log('上报数据标签为', tag);
+        // }
+        // document.getElementById('btnLogin').onclick = showLogin;
+
+        let nodes = document.getElementsByTagName('button');
+        // AOP
+        Function.prototype.after = function (afterFn) {
+            const _this = this;
+            return function () {
+                const ret = _this.apply(this, arguments);
+                afterFn.apply(this, arguments);
+                return ret;
+            }
+        }
+        var showLogin = function () {
+            console.log('打开登录框');
+        }
+
+        var log = function () {
+            console.log('上报数据的标签为', this.getAttribute('tag'))
+        }
+        showLogin = showLogin.after(log);
+        for (var i = 0; i < nodes.length; i++) {
+            (function (i) {
+                nodes[i].onclick = showLogin
+            })(i)
+        }
+
+        /*
+         *节流 延迟一段时间来限制函数被频繁调用
+         */
+        const throttle = function (fn, interval) {
+            var __self = fn, //函数引用
+                timer, //定时器
+                firsTime = true; //是否是第一次调动
+
+            return function () {
+                var args = arguments,
+                    __me = this;
+                // 第一次调用 不需要延迟执行
+                if (firsTime) {
+                    __self.apply(__me, args);
+                    return firsTime = false;
+                }
+                // 如若定时器存在 前一次执行还未完成
+                if (timer) {
+                    return false;
+                }
+                timer = setTimeout(() => {
+                    clearTimeout(timer);
+                    timer = null;
+                    __self.apply(__me, args)
+                }, interval || 500);
+            }
+        }
+
+        const inputValue = document.getElementById('filter');
+        inputValue.oninput = throttle(function (event) {
+            console.log(searchLink(event.data))
+        })
+        // 前端实现联想搜索
+        function searchLink(keyWord) {
+            let list = ['abc', 'ab', 'a', 'bn', 'abdc', 'wecfrr'];
+            let reg = new RegExp(keyWord, 'i');
+            return list.filter(item => reg.test(item))
+        }
+        // document.getElementById('btnLogin').onclick = showLogin;
+
+        // 分时函数 短时间内处理大量的数据 可以进行分批处理
+        // const arr = [];
+        // for (var i = 0; i < 1000; i++) {
+        //     arr.push(i)
+        // }
+        // var renderFrendList = function (data) {
+        //     for (let i = 0, l = arr.length; i < l; i++) {
+        //         let div = document.createElement('div');
+        //         div.innerHTML = i;
+        //         document.body.appendChild(div);
+
+        //     }
+        // }
+        // renderFrendList(arr)
+        /*
+         *分时加载函数
+         */
+        const timeChunk = function (ary, fn, count, interval) {
+            var obj, t;
+            var len = ary.length;
+            var start = function () {
+                for (var i = 0; i < Math.min(count || 1, len); i++) {
+                    var obj = ary.shift();
+                    fn(obj);
+                }
+            }
+            return function () {
+                t = setInterval(() => {
+                    if (ary.length === 0) {
+                        t = null;
+                        return clearInterval(t);
+                    }
+                    start();
+                }, interval || 200)
+            }
+        }
+
+        const arr = [];
+        for (var i = 0; i < 1000; i++) {
+            arr.push(i)
+        }
+        var renderFrendList = timeChunk(arr, function (n) {
+            let div = document.createElement('div');
+            div.innerHTML = n;
+            document.body.appendChild(div);
+        }, 100)
+        renderFrendList()
+
+        // 图片懒加载代理模式
+        const myImage = (function () {
+            let imageNode = document.createElement('img');
+            document.body.appendChild(imageNode);
+            return {
+                setSrc: function (src) {
+                    imageNode.src = src;
+                }
+            }
+        })();
+
+        const proxyImage = (function () {
+            const img = new Image;
+            img.onload = function () {
+                myImage.setSrc(this.src)
+            }
+            img.onerror = (error) => {
+                console.log(error);
+            }
+            return {
+                setSrc: function (src) {
+                    myImage.setSrc('D:/downLoad/images/01.png')
+                    img.src = src;
+                }
+            }
+        })();
+
+        proxyImage.setSrc(
+            'D:/downLoad/images/picture/90860e87ab87aeaed8210dfee5aed2442944059.jpg'
+        );
+    </script>
+</body>
+
+</html>

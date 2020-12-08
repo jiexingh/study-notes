@@ -1,0 +1,85 @@
+<!--
+ * @Autor: jiexingh
+ * @Date: 2020-09-26 17:20:04
+ * @LastEditors: jiexingh
+ * @LastEditTime: 2020-09-30 17:04:37
+-->
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>迭代器模式</title>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+</head>
+
+<body>
+    <script>
+        // 迭代器实现思路 接收两个参数，第一个用于被循环 第二个为循环每一步之后被触发的函数
+        const each = function (ary, callback) {
+            for (let i = 0, len = ary.length; i < len; i++) {
+                callback(i, ary[i]);
+            }
+        }
+        const compare = function (ary1, ary2) {
+            if (ary1.length !== ary2.length) {
+                throw new Error('ary1和ary2不相等');
+            }
+            each(ary1, (index, item) => {
+                if (item !== ary2[index]) {
+                    throw new Error('ary1和ary2不相等');
+                }
+            })
+            console.log('ary1和ary2两个数组相等')
+            return 'ary1和ary2两个数组相等'
+        }
+        compare([1, 2], [1, 2])
+
+        // 迭代器寻找适用的上传文件方式
+        const getActivteUploadObj = function () {
+            try {
+                return new ActiveXObject('TXFTNActiveX.FINUpload'); //IE上传控件
+            } catch (e) {
+                return false;
+            }
+        }
+        // 是否支持flash
+        function supportFlash() {
+            return false;
+        }
+        const getFlashUploadObj = function () {
+            if (supportFlash()) {
+                let str = '<object type="application/x-shockwave-flash"></object>';
+                return $(str).appendTo($('body'))
+            }
+            return false;
+        }
+        //  表单上传
+        const getFormUploadObj = function () {
+            let str = '<input name="file" type="file" class="ui-file"/>';
+
+            // return document.appendChild(str)
+            return $(str).appendTo($('body'))
+        }
+
+        // 以上三个函数都约定如果当前upload方式可用，则返回该对象，否则返回false
+        const interatorUploadObj = function () {
+            for (let i = 0, len = arguments.length; i < len; i++) {
+                let uploadObj = arguments[i]();
+                if (uploadObj !== false) {
+                    return uploadObj
+                }
+            }
+        }
+        const getWebkitUploadObj = function () {
+
+        }
+        const getHtml5UploadObj = function () {
+
+        }
+        //可根据上传方式的优先级放入数组
+        let uploadObj = interatorUploadObj(getFlashUploadObj, getFormUploadObj, interatorUploadObj);
+        console.log(uploadObj);
+    </script>
+</body>
+
+</html>
